@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -118,11 +119,26 @@ public class WaterDropView extends View {
         canvas.drawPath(path, mPaint);
     }
     
-    public void startAnim() {
-        mData[1].x += 1;
-    
-        mCtrl[1].x+=1;
-        mCtrl[2].x+=1;
-        postInvalidate();
+    private float mLastX;
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                mLastX=event.getX();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float deltaX=event.getX()-mLastX;
+                mLastX=event.getX();
+                mData[1].x+=deltaX;
+                mCtrl[1].x=mData[1].x;
+                mCtrl[2].x=mData[1].x;
+                postInvalidate();
+                break;
+            case MotionEvent.ACTION_UP:
+            default:
+                break;
+        }
+        return true;
     }
+    
 }

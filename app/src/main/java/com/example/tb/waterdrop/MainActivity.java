@@ -12,11 +12,5 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         waterDropView= (WaterDropView) findViewById(R.id.water);
-        findViewById(R.id.bt).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                waterDropView.startAnim();
-            }
-        });
     }
 }
