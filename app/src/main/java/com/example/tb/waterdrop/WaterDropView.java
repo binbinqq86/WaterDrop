@@ -99,7 +99,7 @@ public class WaterDropView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        centerX = w / 2f;
+        centerX = radius;
         centerY = h / 2f;
     }
     
@@ -120,18 +120,61 @@ public class WaterDropView extends View {
     }
     
     private float mLastX;
+    private float mFirstX;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 mLastX=event.getX();
+                mFirstX=event.getX();
                 break;
             case MotionEvent.ACTION_MOVE:
                 float deltaX=event.getX()-mLastX;
                 mLastX=event.getX();
-                mData[1].x+=deltaX;
-                mCtrl[1].x=mData[1].x;
-                mCtrl[2].x=mData[1].x;
+                if(event.getX()-mFirstX>radius){
+                    if(mData[0].y<radius/2f){
+                        mData[3].x+=deltaX;
+                        mCtrl[5].x+=deltaX;
+                        mCtrl[6].x+=deltaX;
+    
+                        mCtrl[1].y++;
+                        mCtrl[2].y--;
+                        mCtrl[5].y--;
+                        mCtrl[6].y++;
+                        mCtrl[0].y++;
+                        mCtrl[3].y--;
+                        mCtrl[4].y--;
+                        mCtrl[7].y++;
+                        mData[0].y++;
+                        mData[2].y--;
+                    }else{
+                        mData[0].x+=deltaX;
+                        mData[2].x+=deltaX;
+                        mData[0].y--;
+                        mData[2].y++;
+    
+                        mCtrl[0].x+=deltaX;
+                        mCtrl[3].x+=deltaX;
+                        mCtrl[4].x+=deltaX;
+                        mCtrl[7].x+=deltaX;
+    
+                        mCtrl[0].y--;
+                        mCtrl[3].y++;
+                        mCtrl[4].y++;
+                        mCtrl[7].y--;
+                        
+                        mCtrl[1].y++;
+                        mCtrl[2].y--;
+                        
+                        mData[1].x+=deltaX;
+                        mCtrl[1].x+=deltaX;
+                        mCtrl[2].x+=deltaX;
+                    }
+                }else{
+                    mData[1].x+=deltaX;
+                    mCtrl[1].x+=deltaX;
+                    mCtrl[2].x+=deltaX;
+                }
                 postInvalidate();
                 break;
             case MotionEvent.ACTION_UP:
