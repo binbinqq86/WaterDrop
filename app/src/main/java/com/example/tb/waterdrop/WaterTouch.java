@@ -8,7 +8,6 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,7 +16,7 @@ import android.view.View;
  * Created by : tb on 2017/9/1 上午11:00.
  * Description :
  */
-public class WaterDropView extends View {
+public class WaterTouch extends View {
     private static final String TAG = "WaterDropView";
     /**
      * 圆的半径
@@ -48,15 +47,15 @@ public class WaterDropView extends View {
      */
     private PointF[] mCtrl = new PointF[8];
     
-    public WaterDropView(Context context) {
+    public WaterTouch(Context context) {
         this(context, null);
     }
     
-    public WaterDropView(Context context, @Nullable AttributeSet attrs) {
+    public WaterTouch(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
     
-    public WaterDropView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public WaterTouch(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }

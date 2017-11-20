@@ -19,9 +19,17 @@
         android:id="@+id/bt2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="demo"
+        android:text="waterTouch"
         android:textAllCaps="false"
         app:layout_constraintLeft_toRightOf="@id/bt1"/>
+    
+    <Button
+        android:id="@+id/bt3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="waterAnim"
+        android:textAllCaps="false"
+        app:layout_constraintLeft_toRightOf="@id/bt2"/>
     
     <com.example.tb.waterdrop.QuadTo
         android:id="@+id/quadTo"

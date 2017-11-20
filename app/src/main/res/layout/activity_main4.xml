@@ -5,9 +5,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.tb.waterdrop.Main3Activity">
+    tools:context="com.example.tb.waterdrop.Main4Activity">
     
-    <com.example.tb.waterdrop.WaterTouch
+    <com.example.tb.waterdrop.WaterAnim
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 </android.support.constraint.ConstraintLayout>
