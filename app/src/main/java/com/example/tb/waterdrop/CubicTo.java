@@ -14,7 +14,7 @@ import android.view.View;
 /**
  * @auther tb
  * @time 2017/11/20 下午1:10
- * @desc
+ * @desc 三阶贝塞尔曲线
  */
 public class CubicTo extends View{
     private Paint mPaint;

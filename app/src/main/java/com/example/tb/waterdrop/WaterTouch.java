@@ -14,7 +14,7 @@ import android.view.View;
 
 /**
  * Created by : tb on 2017/9/1 上午11:00.
- * Description :
+ * Description :三阶贝塞尔曲线实现的水滴效果（触摸实现）
  */
 public class WaterTouch extends View {
     private static final String TAG = "WaterDropView";
@@ -218,7 +218,7 @@ public class WaterTouch extends View {
                         initCtrlPoints();
                     }
                     
-                    //最左边的一个数据点和两个控制点同时3倍速度右移
+                    //最左边的一个数据点和两个控制点同时2倍速度右移
                     mData[3].x += 2 * deltaX;
                     mCtrl[5].x += 2 * deltaX;
                     mCtrl[6].x += 2 * deltaX;

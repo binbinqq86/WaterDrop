@@ -14,7 +14,7 @@ import android.view.View;
 /**
  * @auther tb
  * @time 2017/11/20 上午11:40
- * @desc
+ * @desc 二阶贝塞尔曲线
  */
 public class QuadTo extends View{
     
