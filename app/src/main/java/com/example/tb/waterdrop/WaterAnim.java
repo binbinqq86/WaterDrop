@@ -15,14 +15,14 @@ import android.view.View;
 /**
  * @auther tb
  * @time 2017/11/20 下午4:41
- * @desc 
-*/
+ * @desc
+ */
 public class WaterAnim extends View {
     private static final String TAG = "WaterDropView";
     /**
      * 圆的半径
      */
-    private float radius = 200f;
+    private float radius = 100f;
     /**
      * 画布的坐标中心
      */
@@ -47,6 +47,20 @@ public class WaterAnim extends View {
      * 逆时针记录绘制圆形的八个控制点
      */
     private PointF[] mCtrl = new PointF[8];
+    
+    /**
+     * 控件整体移动的距离
+     */
+    private float distance = 500f;
+    /**
+     * 动画总时长(单位：ms，松手以后开始)
+     */
+    private int duration = 2 * 1000;
+    
+    /**
+     * 动画当前已走过的距离
+     */
+    private float currDistance;
     
     public WaterAnim(Context context) {
         this(context, null);
@@ -99,6 +113,16 @@ public class WaterAnim extends View {
         centerY = h / 2f;
     }
     
+    /**
+     * 设置动画当前已走过的距离
+     *
+     * @param currDistance
+     */
+    public void setCurrentDistance(float currDistance) {
+        this.currDistance = currDistance;
+        postInvalidate();
+    }
+    
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -141,16 +165,21 @@ public class WaterAnim extends View {
         mPaint.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, getResources().getDisplayMetrics()));
         mPaint.setStyle(Paint.Style.FILL);
         canvas.drawPath(path, mPaint);
+        
+        
     }
     
     private float mLastX;
     private float mFirstX;
     /**
+     * 注释仅代表向右，左边相反即可（0-6，1-4，2-3状态都是对应的，5是回弹状态）
      * 0:初始状态
      * 1:右半部分向右拉伸
-     * 2:椭圆状态，整体右移
-     * 3:左半部分向右拉伸
-     * 4:恢复状态
+     * 2:逐渐变为椭圆状态
+     * 3:逐渐变为圆形状态，同时整体右移
+     * 4:左半部分向右缩减
+     * 5:回弹
+     * 6:恢复初始状态
      */
     private int STATUS = 0;
     

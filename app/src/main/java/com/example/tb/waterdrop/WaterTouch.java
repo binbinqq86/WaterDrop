@@ -145,11 +145,13 @@ public class WaterTouch extends View {
     private float mLastX;
     private float mFirstX;
     /**
+     * 注释仅代表向右，左边相反即可（0-5，1-4，2-3状态都是对应的）
      * 0:初始状态
      * 1:右半部分向右拉伸
-     * 2:椭圆状态，整体右移
-     * 3:左半部分向右拉伸
-     * 4:恢复状态
+     * 2:逐渐变为椭圆状态
+     * 3:逐渐变为圆形状态，同时整体右移
+     * 4:左半部分向右缩减
+     * 5:恢复初始状态
      */
     private int STATUS = 0;
     
@@ -157,10 +159,12 @@ public class WaterTouch extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                STATUS = 0;
                 mLastX = event.getX();
                 mFirstX = event.getX();
                 break;
             case MotionEvent.ACTION_MOVE:
+                //总体移动距离为半径的三倍
                 float deltaX = event.getX() - mLastX;
                 mLastX = event.getX();
                 
@@ -170,8 +174,10 @@ public class WaterTouch extends View {
                     STATUS = 2;
                 } else if (event.getX() - mFirstX <= 3 * radius) {
                     STATUS = 3;
-                } else {
+                } else if (event.getX() - mFirstX <= 4 * radius) {
                     STATUS = 4;
+                } else {
+                    STATUS = 5;
                 }
                 if (STATUS == 1) {
                     //最右边的一个数据点和两个控制点同时右移
@@ -213,9 +219,9 @@ public class WaterTouch extends View {
                     }
                     
                     //最左边的一个数据点和两个控制点同时3倍速度右移
-                    mData[3].x += 3 * deltaX;
-                    mCtrl[5].x += 3 * deltaX;
-                    mCtrl[6].x += 3 * deltaX;
+                    mData[3].x += 2 * deltaX;
+                    mCtrl[5].x += 2 * deltaX;
+                    mCtrl[6].x += 2 * deltaX;
                     
                     //中间的两个数据点和4个控制点同时2倍速度右移
                     mData[0].x += 2 * deltaX;
@@ -230,6 +236,12 @@ public class WaterTouch extends View {
                     mData[1].x += deltaX;
                     mCtrl[1].x += deltaX;
                     mCtrl[2].x += deltaX;
+                }
+                if (STATUS == 4) {
+                    //最左边的一个数据点和两个控制点同时右移
+                    mData[3].x += deltaX;
+                    mCtrl[5].x += deltaX;
+                    mCtrl[6].x += deltaX;
                 }
                 postInvalidate();
                 break;
