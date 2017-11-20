@@ -7,9 +7,29 @@
     android:layout_height="match_parent"
     tools:context="com.example.tb.waterdrop.MainActivity">
     
-    <com.example.tb.waterdrop.WaterDropView
-        android:id="@+id/water"
+    <Button
+        android:id="@+id/bt1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:text="Cubic"
+        android:textAllCaps="false"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+    
+    <Button
+        android:id="@+id/bt2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="demo"
+        android:textAllCaps="false"
+        app:layout_constraintLeft_toRightOf="@id/bt1"/>
+    
+    <com.example.tb.waterdrop.QuadTo
+        android:id="@+id/quadTo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bt1"/>
 
 </android.support.constraint.ConstraintLayout>

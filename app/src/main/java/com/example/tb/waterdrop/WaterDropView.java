@@ -131,49 +131,29 @@ public class WaterDropView extends View {
             case MotionEvent.ACTION_MOVE:
                 float deltaX=event.getX()-mLastX;
                 mLastX=event.getX();
-                if(event.getX()-mFirstX>radius){
-                    if(mData[0].y<radius/2f){
-                        mData[3].x+=deltaX;
-                        mCtrl[5].x+=deltaX;
-                        mCtrl[6].x+=deltaX;
-    
-                        mCtrl[1].y++;
-                        mCtrl[2].y--;
-                        mCtrl[5].y--;
-                        mCtrl[6].y++;
-                        mCtrl[0].y++;
-                        mCtrl[3].y--;
-                        mCtrl[4].y--;
-                        mCtrl[7].y++;
-                        mData[0].y++;
-                        mData[2].y--;
-                    }else{
-                        mData[0].x+=deltaX;
-                        mData[2].x+=deltaX;
-                        mData[0].y--;
-                        mData[2].y++;
-    
-                        mCtrl[0].x+=deltaX;
-                        mCtrl[3].x+=deltaX;
-                        mCtrl[4].x+=deltaX;
-                        mCtrl[7].x+=deltaX;
-    
-                        mCtrl[0].y--;
-                        mCtrl[3].y++;
-                        mCtrl[4].y++;
-                        mCtrl[7].y--;
-                        
-                        mCtrl[1].y++;
-                        mCtrl[2].y--;
-                        
-                        mData[1].x+=deltaX;
-                        mCtrl[1].x+=deltaX;
-                        mCtrl[2].x+=deltaX;
-                    }
+                if(event.getX()-mFirstX>=10*radius&&event.getX()-mFirstX<=12*radius){
+                    mData[3].x+=deltaX;
+                    mCtrl[5].x+=deltaX;
+                    mCtrl[6].x+=deltaX;
+                    
+                    mData[0].x+=deltaX/2f;
+                    mData[2].x+=deltaX/2f;
+                    mCtrl[0].x+=deltaX/2f;
+                    mCtrl[7].x+=deltaX/2f;
+                    mCtrl[3].x+=deltaX/2f;
+                    mCtrl[4].x+=deltaX/2f;
                 }else{
                     mData[1].x+=deltaX;
                     mCtrl[1].x+=deltaX;
                     mCtrl[2].x+=deltaX;
+                    
+                    mData[0].x+=deltaX/2f;
+                    mData[2].x+=deltaX/2f;
+                    mCtrl[0].x+=deltaX/2f;
+                    mCtrl[7].x+=deltaX/2f;
+                    mCtrl[3].x+=deltaX/2f;
+                    mCtrl[4].x+=deltaX/2f;
+                    
                 }
                 postInvalidate();
                 break;
