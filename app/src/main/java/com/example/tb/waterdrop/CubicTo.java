@@ -45,6 +45,7 @@ public class CubicTo extends View{
         end = new PointF(0, 0);
         control1 = new PointF(0, 0);
         control2 = new PointF(0, 0);
+        setBackgroundColor(Color.YELLOW);
     }
     
     public void setMode(boolean mode) {
