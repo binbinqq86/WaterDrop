@@ -17,7 +17,6 @@ public class Main4Activity extends AppCompatActivity {
     private ViewPager vp;
     private List<View> list=new ArrayList<>();
     private float lastDis;
-    private float deltDis;
     private WaterAnim waterAnim;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,16 +56,12 @@ public class Main4Activity extends AppCompatActivity {
         vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-//                Log.e(TAG, "onPageScrolled: "+position+"$"+positionOffset+"$"+positionOffsetPixels);
-                if(lastDis>positionOffsetPixels){
-                    //向右滑动
-                }else if(lastDis<positionOffsetPixels){
-                    //向左滑动
+                if(positionOffset==0){
+                    return;
                 }
-                deltDis=positionOffsetPixels-lastDis;
+                Log.e(TAG, "onPageScrolled: "+lastDis+"$"+positionOffsetPixels );
+                waterAnim.setDeltaDistance(lastDis,positionOffsetPixels);
                 lastDis=positionOffsetPixels;
-                Log.e(TAG, "onPageScrolled: "+deltDis );
-                waterAnim.setDeltaDistance(deltDis);
             }
     
             @Override

@@ -8,6 +8,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,7 +23,7 @@ public class WaterAnim extends View {
     /**
      * 圆的半径
      */
-    private float radius = 100f;
+    private float radius = 50f;
     /**
      * 画布的坐标中心
      */
@@ -51,30 +52,31 @@ public class WaterAnim extends View {
     /**
      * 控件整体移动的距离
      */
-    private float distance = 1080f;
+    private float distance = 600f;
     
     /**
      * 注释仅代表向右，左边相反即可（0-7，1-5，2-4状态都是对应的，6是回弹状态，3是维持平移状态）
      * 0:初始状态
-     * 1:右半部分向右拉伸
-     * 2:逐渐变为椭圆状态
+     * 1:右半部分向右拉伸从圆形变为锥形
+     * 2:逐渐变为椭圆状态(最左边保持不动)
      * 3:椭圆状态维持一段时间，整体右移（前提是移动距离足够长）
-     * 4:逐渐变为圆形状态，同时整体右移
-     * 5:左半部分向右缩减
+     * 4:逐渐变为锥形状态(最右边到达，同时保持不动)
+     * 5:左半部分向右缩减直至变为圆形
      * 6:回弹
      * 7:恢复初始状态
      */
     private int STATUS = 0;
     
     /**
-     * 移动的总距离根据半径分为若干份(每一份的长度，最少分为4份，其实3份也行，不过把状态3省略了)
+     * 每一份的长度
+     * 移动的总距离根据半径分为若干份(每一份的长度，最少分为3份，其实2份也行，不过把状态3省略了)
      * 第一份：对应状态STATUS=1
      * 第二份：对应状态STATUS=2
-     * 第三份～第N份：对应状态STATUS=3
-     * 最后一份：对应状态STATUS=4
-     * 最后一份：对应状态STATUS=5
+     * 第三份～最后一份：对应状态STATUS=3
+     * 最左边往前数两份：对应状态STATUS=4
+     * 最左边往前数一份：对应状态STATUS=5
      */
-    private float ratio = radius;
+    private float eachDis = radius;
     
     /**
      * 总共能分的份数
@@ -85,16 +87,6 @@ public class WaterAnim extends View {
      * 每次滑动的距离
      */
     private float deltaDistance;
-    
-    /**
-     * 当前已经走过的距离
-     */
-    private float currentDistance;
-    
-    /**
-     * 动画总时长(单位：ms，松手以后开始)
-     */
-    private int duration = 2 * 1000;
     
     public WaterAnim(Context context) {
         this(context, null);
@@ -118,10 +110,10 @@ public class WaterAnim extends View {
     }
     
     private void initDistance() {
-        if (count < 4) {
+        if (count < 3) {
             //保证最低4份
-            count = 4f;
-            ratio = distance / count;
+            count = 3f;
+            eachDis = distance / count;
         }
     }
     
@@ -129,10 +121,10 @@ public class WaterAnim extends View {
         for (int i = 0; i < 4; i++) {
             mData[i] = new PointF();
         }
-        mData[0].set(0, radius);
-        mData[1].set(radius, 0);
-        mData[2].set(0, -radius);
-        mData[3].set(-radius, 0);
+        mData[0].set(radius, radius);
+        mData[1].set(2 * radius, 0);
+        mData[2].set(radius, -radius);
+        mData[3].set(0, 0);
     }
     
     private void initCtrlPoints() {
@@ -152,25 +144,42 @@ public class WaterAnim extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        centerX = radius;
+        centerX = 0f;
         centerY = h / 2f;
     }
     
     /**
      * 设置当前移动的距离
      *
-     * @param deltaDistance
+     * @param lastDistance    上一次的位置
+     * @param currentDistance 当前的位置
      */
-    public void setDeltaDistance(float deltaDistance) {
-        this.deltaDistance = deltaDistance;
-        currentDistance+=deltaDistance;
-//        initDistance();
+    public void setDeltaDistance(float lastDistance, float currentDistance) {
+        if (STATUS == 7) {
+            return;
+        }
+        this.deltaDistance = currentDistance - lastDistance;
+        if (currentDistance < eachDis) {
+            STATUS = 1;
+        } else if (currentDistance < eachDis * 2f) {
+            STATUS = 2;
+        } else if (currentDistance < distance) {
+            STATUS = 3;
+        } else if (currentDistance < distance + eachDis) {
+            STATUS = 4;
+        } else if (currentDistance < distance + 2 * eachDis) {
+            STATUS = 5;
+        } else/* if (currentDistance >= distance-1 + 2 * eachDis) */ {
+            STATUS = 6;
+        }
         postInvalidate();
     }
     
-    public void reset(){
-        currentDistance=0;
-        deltaDistance=0;
+    public void reset() {
+        deltaDistance = 0;
+        tan = 0;
+        flag = false;
+        STATUS = 0;
     }
     
     @Override
@@ -190,7 +199,7 @@ public class WaterAnim extends View {
         }
         
         // 绘制辅助线
-        mPaint.setStrokeWidth(4);
+//        mPaint.setStrokeWidth(4);
 //        canvas.drawLine(mData[0].x, mData[0].y, mCtrl[0].x, mCtrl[0].y, mPaint);
 //        canvas.drawLine(mData[0].x, mData[0].y, mCtrl[7].x, mCtrl[7].y, mPaint);
 //
@@ -216,24 +225,18 @@ public class WaterAnim extends View {
         mPaint.setStyle(Paint.Style.FILL);
         canvas.drawPath(path, mPaint);
         
-        if (currentDistance <= ratio) {
-            STATUS = 1;
-        } else if (currentDistance <= ratio * 2f) {
-            STATUS = 2;
-        } else if (currentDistance <= ratio * (count - 1)) {
-            STATUS = 3;
-        } else if (currentDistance < distance) {
-            STATUS = 4;
-        } else {
-            STATUS = 5;
-        }
-        
         switch (STATUS) {
             case 1:
                 //最右边的一个数据点和两个控制点同时右移
                 mData[1].x += deltaDistance;
                 mCtrl[1].x += deltaDistance;
                 mCtrl[2].x += deltaDistance;
+                //超过处理
+                if (mData[1].x > 2 * radius + eachDis) {
+                    mData[1].x = 2 * radius + eachDis;
+                    mCtrl[1].x = 2 * radius + eachDis;
+                    mCtrl[2].x = 2 * radius + eachDis;
+                }
                 break;
             case 2:
                 //逐渐拉伸为椭圆状态
@@ -251,11 +254,25 @@ public class WaterAnim extends View {
                 mCtrl[7].x += deltaDistance;
                 mCtrl[3].x += deltaDistance;
                 mCtrl[4].x += deltaDistance;
+                if (mData[0].x > 2 * radius) {
+                    mData[0].x = 2 * radius;
+                    mData[2].x = 2 * radius;
+                    
+                    mCtrl[0].x = 2 * radius;
+                    mCtrl[7].x = 2 * radius;
+                    mCtrl[3].x = 2 * radius;
+                    mCtrl[4].x = 2 * radius;
+                }
                 
                 //最右边的一个数据点和两个控制点同时右移
                 mData[1].x += deltaDistance;
                 mCtrl[1].x += deltaDistance;
                 mCtrl[2].x += deltaDistance;
+                if (mData[1].x > 2 * radius + 2 * eachDis) {
+                    mData[1].x = 2 * radius + 2 * eachDis;
+                    mCtrl[1].x = 2 * radius + 2 * eachDis;
+                    mCtrl[2].x = 2 * radius + 2 * eachDis;
+                }
                 break;
             case 3:
                 //整体平移
@@ -272,9 +289,29 @@ public class WaterAnim extends View {
                 mCtrl[6].x += deltaDistance;
                 mCtrl[7].x += deltaDistance;
                 mCtrl[0].x += deltaDistance;
+                if (mData[1].x > 2 * radius + distance) {
+                    mData[1].x = 2 * radius + distance;
+                    mCtrl[1].x = 2 * radius + distance;
+                    mCtrl[2].x = 2 * radius + distance;
+                }
+                if (mData[0].x > distance) {
+                    mData[0].x = distance;
+                    mData[2].x = distance;
+                    
+                    mCtrl[0].x = distance;
+                    mCtrl[7].x = distance;
+                    mCtrl[3].x = distance;
+                    mCtrl[4].x = distance;
+                }
+                if (mData[3].x > distance - 2 * radius) {
+                    mData[3].x = distance - 2 * radius;
+                    mCtrl[5].x = distance - 2 * radius;
+                    mCtrl[6].x = distance - 2 * radius;
+                }
                 break;
             case 4:
-                //逐渐恢复圆形
+                Log.e(TAG, "onDraw: 44444444");
+                //逐渐恢复锥形
                 //mDelta的值不断减少直至恢复为初始值
                 if (mDelta > radius * C) {
                     mDelta -= deltaDistance / 5f;
@@ -284,66 +321,80 @@ public class WaterAnim extends View {
                     initCtrlPoints();
                 }
                 
-                //最左边的一个数据点和两个控制点同时3倍速度右移
-                mData[3].x += (count - 1) * deltaDistance;
-                mCtrl[5].x += (count - 1) * deltaDistance;
-                mCtrl[6].x += (count - 1) * deltaDistance;
-                
-                //中间的两个数据点和4个控制点同时2倍速度右移
-                mData[0].x += (count - 1) * deltaDistance;
-                mData[2].x += (count - 1) * deltaDistance;
-                
-                mCtrl[0].x += (count - 1) * deltaDistance;
-                mCtrl[7].x += (count - 1) * deltaDistance;
-                mCtrl[3].x += (count - 1) * deltaDistance;
-                mCtrl[4].x += (count - 1) * deltaDistance;
-                
-                //最右边的一个数据点和两个控制点同时右移
-                mData[1].x += deltaDistance;
-                mCtrl[1].x += deltaDistance;
-                mCtrl[2].x += deltaDistance;
-                break;
-            case 5:
                 //最左边的一个数据点和两个控制点同时右移
                 mData[3].x += deltaDistance;
                 mCtrl[5].x += deltaDistance;
                 mCtrl[6].x += deltaDistance;
-                if (mData[3].x == distance - ratio) {
-                    //说明已经恢复一个圆了，开始执行状态6
-                    STATUS = 6;
+                if (mData[3].x > distance - eachDis) {
+                    mData[3].x = distance - eachDis;
+                    mCtrl[5].x = distance - eachDis;
+                    mCtrl[6].x = distance - eachDis;
+                }
+                
+                //中间的两个数据点和4个控制点同时右移
+                mData[0].x += deltaDistance;
+                mData[2].x += deltaDistance;
+                
+                mCtrl[0].x += deltaDistance;
+                mCtrl[7].x += deltaDistance;
+                mCtrl[3].x += deltaDistance;
+                mCtrl[4].x += deltaDistance;
+                if (mData[0].x > distance + radius) {
+                    mData[0].x = distance + radius;
+                    mData[2].x = distance + radius;
+                    
+                    mCtrl[0].x = distance + radius;
+                    mCtrl[7].x = distance + radius;
+                    mCtrl[3].x = distance + radius;
+                    mCtrl[4].x = distance + radius;
+                }
+                break;
+            case 5:
+                Log.e(TAG, "onDraw: 555555");
+                //最左边的一个数据点右移直至变为圆形
+                mData[3].x += deltaDistance;
+                mCtrl[5].x += deltaDistance;
+                mCtrl[6].x += deltaDistance;
+                if (mData[3].x > distance) {
+                    mData[3].x = distance;
+                    mCtrl[5].x = distance;
+                    mCtrl[6].x = distance;
                 }
                 break;
             case 6:
-                if (tan < radius / 2f) {
-                    if (flag) {
-                        if (tan > 0) {
-                            mData[3].x -= tan;
-                            mCtrl[5].x -= tan;
-                            mCtrl[6].x -= tan;
-                            tan -= 1;
-                        } else {
-                            //回弹完成
-                            flag = false;
-                            tan = 0;
-                            STATUS = 7;
-                        }
-                    } else {
-                        mData[3].x += tan;
-                        mCtrl[5].x += tan;
-                        mCtrl[6].x += tan;
-                        tan += 1;
-                    }
-                } else if (tan == radius / 2f) {
+                Log.e(TAG, "onDraw: 6666666======" + tan);
+                if (tan >= radius / 5f) {
                     flag = true;
                 }
+                if (flag) {
+                    if (tan > 0) {
+                        mData[3].x -= tan;
+                        mCtrl[5].x -= tan;
+                        mCtrl[6].x -= tan;
+                        tan--;
+                    } else {
+                        //回弹完成
+                        reset();
+                        STATUS = 7;
+                    }
+                } else {
+                    mData[3].x += tan;
+                    mCtrl[5].x += tan;
+                    mCtrl[6].x += tan;
+                    tan++;
+                }
+                postInvalidate();
                 break;
-        }
-        if (STATUS < 0 && STATUS < 7) {
-            postInvalidate();
         }
     }
     
+    /**
+     * 回弹距离
+     */
     private int tan = 0;
+    /**
+     * 是否开始回弹
+     */
     private boolean flag = false;
     
     public void setRadius(float radius) {
