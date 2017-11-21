@@ -59,9 +59,9 @@ public class Main4Activity extends AppCompatActivity {
                 if(positionOffset==0){
                     return;
                 }
-                Log.e(TAG, "onPageScrolled: "+lastDis+"$"+positionOffsetPixels );
-                waterAnim.setDeltaDistance(lastDis,positionOffsetPixels);
-                lastDis=positionOffsetPixels;
+                Log.e(TAG, "onPageScrolled: "+lastDis+"$"+positionOffset );
+                waterAnim.setDeltaDistance(lastDis,positionOffset);
+                lastDis=positionOffset;
             }
     
             @Override

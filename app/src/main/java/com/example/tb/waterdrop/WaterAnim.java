@@ -88,6 +88,15 @@ public class WaterAnim extends View {
      */
     private float deltaDistance;
     
+    /**
+     * 回弹距离
+     */
+    private int tan = 0;
+    /**
+     * 是否开始回弹
+     */
+    private boolean flag = false;
+    
     public WaterAnim(Context context) {
         this(context, null);
     }
@@ -158,7 +167,11 @@ public class WaterAnim extends View {
         if (STATUS == 7) {
             return;
         }
-        this.deltaDistance = currentDistance - lastDistance;
+        if(currentDistance>0.99){
+            currentDistance=1;
+        }
+        this.deltaDistance = distance * (currentDistance - lastDistance);
+        currentDistance *= distance;
         if (currentDistance < eachDis) {
             STATUS = 1;
         } else if (currentDistance < eachDis * 2f) {
@@ -190,7 +203,9 @@ public class WaterAnim extends View {
         
         //绘制数据点和控制点
         mPaint.setColor(Color.GRAY);
-        mPaint.setStrokeWidth(20);
+        mPaint.setStrokeWidth(1);
+        canvas.drawLine(distance + 2 * radius, -1000, distance + 2 * radius, 1000, mPaint);
+        canvas.drawLine(distance, -1000, distance, 1000, mPaint);
         for (int i = 0; i < mData.length; i++) {
 //            canvas.drawPoint(mData[i].x, mData[i].y, mPaint);
         }
@@ -242,7 +257,7 @@ public class WaterAnim extends View {
                 //逐渐拉伸为椭圆状态
                 //mDelta的值不断增加但不超过半径的四分之三
                 if (mDelta < radius * 3f / 4f) {
-                    mDelta += deltaDistance / 5f;
+                    mDelta++;
                     initCtrlPoints();
                 }
                 
@@ -310,11 +325,10 @@ public class WaterAnim extends View {
                 }
                 break;
             case 4:
-                Log.e(TAG, "onDraw: 44444444");
                 //逐渐恢复锥形
                 //mDelta的值不断减少直至恢复为初始值
                 if (mDelta > radius * C) {
-                    mDelta -= deltaDistance / 5f;
+                    mDelta--;
                     initCtrlPoints();
                 } else if (mDelta < radius * C) {
                     mDelta = radius * C;
@@ -350,7 +364,6 @@ public class WaterAnim extends View {
                 }
                 break;
             case 5:
-                Log.e(TAG, "onDraw: 555555");
                 //最左边的一个数据点右移直至变为圆形
                 mData[3].x += deltaDistance;
                 mCtrl[5].x += deltaDistance;
@@ -362,7 +375,6 @@ public class WaterAnim extends View {
                 }
                 break;
             case 6:
-                Log.e(TAG, "onDraw: 6666666======" + tan);
                 if (tan >= radius / 5f) {
                     flag = true;
                 }
@@ -376,6 +388,11 @@ public class WaterAnim extends View {
                         //回弹完成
                         reset();
                         STATUS = 7;
+                        if (mData[3].x != distance) {
+                            mData[3].x = distance;
+                            mCtrl[5].x = distance;
+                            mCtrl[6].x = distance;
+                        }
                     }
                 } else {
                     mData[3].x += tan;
@@ -387,15 +404,6 @@ public class WaterAnim extends View {
                 break;
         }
     }
-    
-    /**
-     * 回弹距离
-     */
-    private int tan = 0;
-    /**
-     * 是否开始回弹
-     */
-    private boolean flag = false;
     
     public void setRadius(float radius) {
         this.radius = radius;
